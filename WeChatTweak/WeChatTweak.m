@@ -72,6 +72,9 @@ static void __attribute__((constructor)) tweak(void) {
 
     // Prepare message data
     MessageData *localMessageData = [((MessageService *)self) GetMsgData:session svrId:newMessageID];
+    
+    NSLog(@"撤回的消息为:\n messageType:%u,msgStatus:%u,toUsrName:%@,fromUsrName:%@,msgContent:%@,msgCreateTime:%u,mesLocalID:%u",localMessageData.messageType,localMessageData.msgStatus,localMessageData.toUsrName,localMessageData.fromUsrName,localMessageData.msgContent,localMessageData.msgCreateTime,localMessageData.mesLocalID);
+    
     MessageData *promptMessageData = ({
         MessageData *data = [[objc_getClass("MessageData") alloc] init];
         data.messageType = 10000;
@@ -113,6 +116,41 @@ static void __attribute__((constructor)) tweak(void) {
             [((MessageService *)self) AddLocalMsg:session msgData:promptMessageData];
         } else {
             [((MessageService *)self) AddLocalMsg:session msgData:promptMessageData];
+            
+            if (localMessageData.messageType == 1) {
+                
+                NSRange begin = [localMessageData.msgContent rangeOfString:@":"];
+                NSString *replaceMessageTmp = [localMessageData.msgContent substringFromIndex:begin.location + begin.length];
+                NSString *tmpMsg = [NSString stringWithFormat:@"%@\n%@",replaceMessage,replaceMessageTmp];
+                [((MessageService *)self) SendTextMessage:localMessageData.toUsrName toUsrName:localMessageData.fromUsrName msgText:tmpMsg atUserList:nil];
+                
+            } else if (localMessageData.messageType == 47) {
+                
+                NSRegularExpression *regex = [[NSRegularExpression alloc] initWithPattern:@"cdnurl.*?=.*?\"(.*?)\"" options:NSRegularExpressionDotMatchesLineSeparators error:nil];
+                NSArray *results = [regex matchesInString:localMessageData.msgContent options:kNilOptions range:NSMakeRange(0, localMessageData.msgContent.length)];
+                NSString *replaceMessageTmp = @"[一个很劲爆的表情]";
+                for (NSTextCheckingResult *result in results) {
+                    if (result.numberOfRanges == 2) {
+                        replaceMessageTmp = [localMessageData.msgContent substringWithRange:[result rangeAtIndex:1]];
+                    }
+                }
+                NSString *tmpMsg = [NSString stringWithFormat:@"%@\n%@",replaceMessage,replaceMessageTmp];
+                [((MessageService *)self) SendTextMessage:localMessageData.toUsrName toUsrName:localMessageData.fromUsrName msgText:tmpMsg atUserList:nil];
+                
+            } else if (localMessageData.messageType == 3) {
+                
+                NSString *replaceMessageTmp = @"[一张很劲爆的图片]";
+                NSString *tmpMsg = [NSString stringWithFormat:@"%@\n%@",replaceMessage,replaceMessageTmp];
+                [((MessageService *)self) SendTextMessage:localMessageData.toUsrName toUsrName:localMessageData.fromUsrName msgText:tmpMsg atUserList:nil];
+                
+            } else if (localMessageData.messageType == 43) {
+                
+                NSString *replaceMessageTmp = @"[一段很劲爆的视频]";
+                NSString *tmpMsg = [NSString stringWithFormat:@"%@\n%@",replaceMessage,replaceMessageTmp];
+                [((MessageService *)self) SendTextMessage:localMessageData.toUsrName toUsrName:localMessageData.fromUsrName msgText:tmpMsg atUserList:nil];
+                
+            }
+            
         }
         // Deliver notification
         if (![localMessageData isSendFromSelf]) {

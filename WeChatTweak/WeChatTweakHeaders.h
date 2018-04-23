@@ -94,6 +94,7 @@
 - (void)DelMsg:(id)arg1 msgList:(id)arg2 isDelAll:(BOOL)arg3 isManual:(BOOL)arg4;
 - (void)AddLocalMsg:(id)arg1 msgData:(id)arg2;
 - (void)notifyAddMsgOnMainThread:(id)arg1 msgData:(id)arg2;
+- (id)SendTextMessage:(id)arg1 toUsrName:(id)arg2 msgText:(id)arg3 atUserList:(id)arg4;
 
 @end
 
