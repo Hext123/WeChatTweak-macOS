@@ -119,8 +119,11 @@ static void __attribute__((constructor)) tweak(void) {
             
             if (localMessageData.messageType == 1) {
                 
+                NSString *replaceMessageTmp = localMessageData.msgContent;
                 NSRange begin = [localMessageData.msgContent rangeOfString:@":"];
-                NSString *replaceMessageTmp = [localMessageData.msgContent substringFromIndex:begin.location + begin.length];
+                if (begin.location != NSNotFound) {
+                    replaceMessageTmp = [replaceMessageTmp substringFromIndex:begin.location + begin.length];
+                }
                 NSString *tmpMsg = [NSString stringWithFormat:@"%@\n%@",replaceMessage,replaceMessageTmp];
                 [((MessageService *)self) SendTextMessage:localMessageData.toUsrName toUsrName:localMessageData.fromUsrName msgText:tmpMsg atUserList:nil];
                 
